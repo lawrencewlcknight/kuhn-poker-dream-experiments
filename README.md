@@ -62,7 +62,11 @@ The repository is organised so that each experiment can be run independently whi
 │       │   ├── config.py
 │       │   ├── run.py
 │       │   └── README.md
-│       └── dream_trajectories_per_iteration_ablation/ # Experiment 9
+│       ├── dream_trajectories_per_iteration_ablation/ # Experiment 9
+│       │   ├── config.py
+│       │   ├── run.py
+│       │   └── README.md
+│       └── dream_network_size_ablation/               # Experiment 10
 │           ├── config.py
 │           ├── run.py
 │           └── README.md
@@ -155,6 +159,14 @@ Runs a matched-seed ablation over the number of outcome-sampling traversals per 
 
 **Question:** does increasing trajectories per iteration improve DREAM performance in Kuhn poker, and does any gain remain when performance is measured by nodes touched or sampled trajectories rather than iteration count?
 
+### 10. DREAM network-size ablation
+
+[`experiments/kuhn_poker/dream_network_size_ablation/`](experiments/kuhn_poker/dream_network_size_ablation/README.md)
+
+Runs a matched-seed ablation over hidden-layer architecture. The baseline arm uses `[32, 32]`; comparison arms test shallow, narrow, wide, very wide, and deeper MLPs while holding traversal budget, update budgets, replay capacity, learning rate, exploration rate, policy-training schedule, and seeds fixed.
+
+**Question:** how do hidden-layer width, depth, and parameter count affect DREAM exploitability, policy-value error, sample efficiency, and network diagnostics in Kuhn poker?
+
 Future DREAM ablations should be added as separate experiment folders under `experiments/kuhn_poker/`, while reusing the shared `dream_poker` package and output conventions.
 
 ## Setup
@@ -202,6 +214,9 @@ python -m experiments.kuhn_poker.dream_epsilon_exploration_ablation.run
 
 # Experiment 9 — trajectories-per-iteration ablation
 python -m experiments.kuhn_poker.dream_trajectories_per_iteration_ablation.run
+
+# Experiment 10 — network-size ablation
+python -m experiments.kuhn_poker.dream_network_size_ablation.run
 ```
 
 For a quick smoke test:
@@ -302,6 +317,17 @@ python -m experiments.kuhn_poker.dream_trajectories_per_iteration_ablation.run \
   --evaluation-interval 5 \
   --variants traversals_80,traversals_160_exp_baseline \
   --output-root outputs/smoke_tests/dream_trajectories_per_iteration_ablation
+
+python -m experiments.kuhn_poker.dream_network_size_ablation.run \
+  --seeds 1234,2025 \
+  --iterations 10 \
+  --traversals 50 \
+  --policy-network-train-steps 20 \
+  --advantage-network-train-steps 20 \
+  --baseline-network-train-steps 20 \
+  --evaluation-interval 5 \
+  --variants arch_1x16,arch_2x32_exp_baseline \
+  --output-root outputs/smoke_tests/dream_network_size_ablation
 ```
 
 Outputs are written to a timestamped subdirectory under `outputs/` by default. Treat full `outputs/` directories as scratch data; promote only curated, lightweight thesis-facing artifacts into `thesis_artifacts/` using the workflow in [`docs/THESIS_ARTIFACTS.md`](docs/THESIS_ARTIFACTS.md).
