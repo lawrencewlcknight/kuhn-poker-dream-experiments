@@ -66,7 +66,15 @@ The repository is organised so that each experiment can be run independently whi
 │       │   ├── config.py
 │       │   ├── run.py
 │       │   └── README.md
-│       └── dream_network_size_ablation/               # Experiment 10
+│       ├── dream_network_size_ablation/               # Experiment 10: width
+│       │   ├── config.py
+│       │   ├── run.py
+│       │   └── README.md
+│       ├── dream_network_depth_ablation/              # Experiment 11
+│       │   ├── config.py
+│       │   ├── run.py
+│       │   └── README.md
+│       └── dream_network_capacity_extremes_ablation/  # Experiment 12
 │           ├── config.py
 │           ├── run.py
 │           └── README.md
@@ -159,15 +167,29 @@ Runs a matched-seed ablation over the number of outcome-sampling traversals per 
 
 **Question:** does increasing trajectories per iteration improve DREAM performance in Kuhn poker, and does any gain remain when performance is measured by nodes touched or sampled trajectories rather than iteration count?
 
-### 10. DREAM network-size ablation
+### 10. DREAM network-width ablation
 
 [`experiments/kuhn_poker/dream_network_size_ablation/`](experiments/kuhn_poker/dream_network_size_ablation/README.md)
 
-Runs a matched-seed ablation over hidden-layer architecture. The baseline arm uses `[32, 32]`; comparison arms test shallow, narrow, wide, very wide, and deeper MLPs while holding traversal budget, update budgets, replay capacity, learning rate, exploration rate, policy-training schedule, and seeds fixed.
+Runs a matched-seed width sweep over `[16, 16]`, baseline `[32, 32]`, `[64, 64]`, and `[128, 128]` while holding network depth and all non-architecture settings fixed.
 
-**Question:** how do hidden-layer width, depth, and parameter count affect DREAM exploitability, policy-value error, sample efficiency, and network diagnostics in Kuhn poker?
+**Question:** how does hidden-layer width affect DREAM exploitability, policy-value error, sample efficiency, and network diagnostics in Kuhn poker?
 
-For cloud runs, split this experiment with `--variant-set width_sweep`, `--variant-set depth_sweep`, and `--variant-set capacity_extremes`; the full eight-variant sweep can exceed a 48-hour Batch limit.
+### 11. DREAM network-depth ablation
+
+[`experiments/kuhn_poker/dream_network_depth_ablation/`](experiments/kuhn_poker/dream_network_depth_ablation/README.md)
+
+Runs a matched-seed depth sweep over `[32]`, baseline `[32, 32]`, and `[32, 32, 32]` while holding hidden width and all non-architecture settings fixed.
+
+**Question:** how does hidden-layer depth affect DREAM performance at a fixed width of 32 units?
+
+### 12. DREAM network-capacity extremes ablation
+
+[`experiments/kuhn_poker/dream_network_capacity_extremes_ablation/`](experiments/kuhn_poker/dream_network_capacity_extremes_ablation/README.md)
+
+Runs a matched-seed comparison of low-capacity `[16]`, baseline `[32, 32]`, and high-capacity `[64, 64, 64]` networks.
+
+**Question:** does DREAM benefit from substantially more representational capacity, or does the smaller Kuhn poker problem favour compact networks?
 
 Future DREAM ablations should be added as separate experiment folders under `experiments/kuhn_poker/`, while reusing the shared `dream_poker` package and output conventions.
 
@@ -217,8 +239,14 @@ python -m experiments.kuhn_poker.dream_epsilon_exploration_ablation.run
 # Experiment 9 — trajectories-per-iteration ablation
 python -m experiments.kuhn_poker.dream_trajectories_per_iteration_ablation.run
 
-# Experiment 10 — network-size ablation
+# Experiment 10 — network-width ablation
 python -m experiments.kuhn_poker.dream_network_size_ablation.run
+
+# Experiment 11 — network-depth ablation
+python -m experiments.kuhn_poker.dream_network_depth_ablation.run
+
+# Experiment 12 — network-capacity extremes ablation
+python -m experiments.kuhn_poker.dream_network_capacity_extremes_ablation.run
 ```
 
 For a quick smoke test:
@@ -328,8 +356,27 @@ python -m experiments.kuhn_poker.dream_network_size_ablation.run \
   --advantage-network-train-steps 20 \
   --baseline-network-train-steps 20 \
   --evaluation-interval 5 \
-  --variant-set capacity_extremes \
-  --output-root outputs/smoke_tests/dream_network_size_ablation
+  --output-root outputs/smoke_tests/dream_network_width_ablation
+
+python -m experiments.kuhn_poker.dream_network_depth_ablation.run \
+  --seeds 1234,2025 \
+  --iterations 10 \
+  --traversals 50 \
+  --policy-network-train-steps 20 \
+  --advantage-network-train-steps 20 \
+  --baseline-network-train-steps 20 \
+  --evaluation-interval 5 \
+  --output-root outputs/smoke_tests/dream_network_depth_ablation
+
+python -m experiments.kuhn_poker.dream_network_capacity_extremes_ablation.run \
+  --seeds 1234,2025 \
+  --iterations 10 \
+  --traversals 50 \
+  --policy-network-train-steps 20 \
+  --advantage-network-train-steps 20 \
+  --baseline-network-train-steps 20 \
+  --evaluation-interval 5 \
+  --output-root outputs/smoke_tests/dream_network_capacity_extremes_ablation
 ```
 
 Outputs are written to a timestamped subdirectory under `outputs/` by default. Treat full `outputs/` directories as scratch data; promote only curated, lightweight thesis-facing artifacts into `thesis_artifacts/` using the workflow in [`docs/THESIS_ARTIFACTS.md`](docs/THESIS_ARTIFACTS.md).

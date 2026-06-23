@@ -228,8 +228,8 @@ def make_plots(
     output_dir: Path,
     config: Dict,
 ) -> None:
-    plot_prefix = "dream_network_size"
-    title_prefix = "DREAM Network-Size Ablation"
+    plot_prefix = str(config.get("plot_prefix", "dream_network_size"))
+    title_prefix = str(config.get("plot_title", "DREAM Network-Size Ablation"))
     value_target = average_policy_value_target(config)
     create_variant_ablation_plots(
         curves_df,
@@ -276,8 +276,7 @@ def make_plots(
     )
 
 
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description=__doc__)
+def add_common_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     parser.add_argument("--seeds", type=str, default=None, help="Comma-separated seed list, e.g. 1234,2025")
     parser.add_argument("--iterations", type=int, default=None)
     parser.add_argument("--traversals", type=int, default=None)
@@ -294,6 +293,16 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--output-root", type=Path, default=None)
     parser.add_argument(
+        "--allow-policy-training-rng-advance",
+        action="store_true",
+        help="Do not restore RNG state after intermittent average-policy training.",
+    )
+    return parser
+
+
+def parse_args() -> argparse.Namespace:
+    parser = add_common_arguments(argparse.ArgumentParser(description=__doc__))
+    parser.add_argument(
         "--variants",
         type=str,
         default=None,
@@ -302,23 +311,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--variant-set",
         type=str,
-        default="all",
+        default="width_sweep",
         choices=sorted(NETWORK_SIZE_VARIANT_SETS),
         help=(
             "Named variant subset to run. Cloud runs should prefer width_sweep, "
             "depth_sweep, or capacity_extremes instead of the full all set."
         ),
     )
-    parser.add_argument(
-        "--allow-policy-training-rng-advance",
-        action="store_true",
-        help="Do not restore RNG state after intermittent average-policy training.",
-    )
     return parser.parse_args()
 
 
-def config_from_args(args: argparse.Namespace) -> Dict:
-    config = copy.deepcopy(EXPERIMENT_CONFIG)
+def config_from_args(args: argparse.Namespace, base_config: Dict = EXPERIMENT_CONFIG) -> Dict:
+    config = copy.deepcopy(base_config)
     if args.seeds:
         config["seeds"] = [int(s.strip()) for s in args.seeds.split(",") if s.strip()]
     if args.iterations is not None:

@@ -34,9 +34,9 @@ def network_variant(
 
 
 EXPERIMENT_CONFIG = {
-    "experiment_name": "kuhn_poker_dream_network_size_ablation",
+    "experiment_name": "kuhn_poker_dream_network_width_ablation",
     "game_name": "kuhn_poker",
-    "algorithm": "DREAM-style OpenSpiel network-size ablation",
+    "algorithm": "DREAM-style OpenSpiel network-width ablation",
     "num_iterations": 175,
     "num_traversals": 160,
     "evaluation_interval": 25,
@@ -63,7 +63,9 @@ EXPERIMENT_CONFIG = {
     "kuhn_game_value_player_0": KUHN_GAME_VALUE_P0,
     "average_policy_value_target": KUHN_AVERAGE_POLICY_VALUE_TARGET,
     "exploitability_threshold": EXPLOITABILITY_THRESHOLD,
-    "output_root": Path("outputs") / "dream_network_size_ablation",
+    "plot_prefix": "dream_network_width",
+    "plot_title": "DREAM Network-Width Ablation",
+    "output_root": Path("outputs") / "dream_network_width_ablation",
 }
 
 
@@ -143,6 +145,15 @@ NETWORK_SIZE_VARIANT_SETS = {
 }
 
 
+def select_network_variants(variant_ids: list[str]) -> list[dict]:
+    """Return configured variants in the requested order."""
+    variants_by_id = {variant["variant_id"]: variant for variant in NETWORK_SIZE_VARIANTS}
+    missing = [variant_id for variant_id in variant_ids if variant_id not in variants_by_id]
+    if missing:
+        raise ValueError(f"Unknown network-size variant ids: {missing}")
+    return [variants_by_id[variant_id] for variant_id in variant_ids]
+
+
 SMOKE_TEST_CONFIG_OVERRIDES = {
     "seeds": SMOKE_TEST_SEEDS,
     "num_iterations": 10,
@@ -152,5 +163,5 @@ SMOKE_TEST_CONFIG_OVERRIDES = {
     "baseline_network_train_steps": 20,
     "policy_network_train_every": 5,
     "evaluation_interval": 5,
-    "output_root": Path("outputs") / "smoke_tests" / "dream_network_size_ablation",
+    "output_root": Path("outputs") / "smoke_tests" / "dream_network_width_ablation",
 }
