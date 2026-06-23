@@ -17,10 +17,34 @@ The default variants are:
 
 The output tables include depth, maximum width, total hidden units, and parameter counts for the constructed PyTorch networks.
 
+For cloud runs, avoid running all variants as one Batch job. The full sweep can exceed a 48-hour Batch timeout. Use named variant sets instead:
+
+- `width_sweep`: `arch_2x16`, `arch_2x32_exp_baseline`, `arch_2x64`, `arch_2x128`;
+- `depth_sweep`: `arch_1x32`, `arch_2x32_exp_baseline`, `arch_3x32`;
+- `capacity_extremes`: `arch_1x16`, `arch_2x32_exp_baseline`, `arch_3x64`.
+
+Each set includes the baseline variant so paired-difference summaries remain valid.
+
 ## Run
 
 ```bash
 python -m experiments.kuhn_poker.dream_network_size_ablation.run
+```
+
+## Split cloud-sized runs
+
+```bash
+python -m experiments.kuhn_poker.dream_network_size_ablation.run \
+  --variant-set width_sweep \
+  --output-root outputs/cloud/dream_network_size_width
+
+python -m experiments.kuhn_poker.dream_network_size_ablation.run \
+  --variant-set depth_sweep \
+  --output-root outputs/cloud/dream_network_size_depth
+
+python -m experiments.kuhn_poker.dream_network_size_ablation.run \
+  --variant-set capacity_extremes \
+  --output-root outputs/cloud/dream_network_size_capacity_extremes
 ```
 
 ## Smoke test
@@ -34,7 +58,7 @@ python -m experiments.kuhn_poker.dream_network_size_ablation.run \
   --advantage-network-train-steps 20 \
   --baseline-network-train-steps 20 \
   --evaluation-interval 5 \
-  --variants arch_1x16,arch_2x32_exp_baseline \
+  --variant-set capacity_extremes \
   --output-root outputs/smoke_tests/dream_network_size_ablation
 ```
 

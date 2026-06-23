@@ -32,7 +32,7 @@ from dream_poker.variant_ablation import (
     write_multiseed_npz,
 )
 
-from .config import BASELINE_VARIANT, EXPERIMENT_CONFIG, NETWORK_SIZE_VARIANTS
+from .config import BASELINE_VARIANT, EXPERIMENT_CONFIG, NETWORK_SIZE_VARIANT_SETS, NETWORK_SIZE_VARIANTS
 
 
 TREATMENT_KEYS = [
@@ -297,7 +297,17 @@ def parse_args() -> argparse.Namespace:
         "--variants",
         type=str,
         default=None,
-        help="Comma-separated variant ids to run; defaults to all configured variants.",
+        help="Comma-separated variant ids to run; overrides --variant-set when provided.",
+    )
+    parser.add_argument(
+        "--variant-set",
+        type=str,
+        default="all",
+        choices=sorted(NETWORK_SIZE_VARIANT_SETS),
+        help=(
+            "Named variant subset to run. Cloud runs should prefer width_sweep, "
+            "depth_sweep, or capacity_extremes instead of the full all set."
+        ),
     )
     parser.add_argument(
         "--allow-policy-training-rng-advance",
@@ -336,9 +346,10 @@ def config_from_args(args: argparse.Namespace) -> Dict:
 
 def variants_from_args(args: argparse.Namespace) -> list[Dict]:
     variants = copy.deepcopy(NETWORK_SIZE_VARIANTS)
-    if not args.variants:
-        return variants
-    requested = {value.strip() for value in args.variants.split(",") if value.strip()}
+    if args.variants:
+        requested = {value.strip() for value in args.variants.split(",") if value.strip()}
+    else:
+        requested = set(NETWORK_SIZE_VARIANT_SETS[args.variant_set])
     selected = [variant for variant in variants if get_variant_id(variant) in requested]
     missing = sorted(requested - {get_variant_id(variant) for variant in selected})
     if missing:

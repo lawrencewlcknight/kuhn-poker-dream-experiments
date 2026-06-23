@@ -122,6 +122,27 @@ NETWORK_SIZE_VARIANTS = [
 ]
 
 
+NETWORK_SIZE_VARIANT_SETS = {
+    "all": [variant["variant_id"] for variant in NETWORK_SIZE_VARIANTS],
+    "width_sweep": [
+        "arch_2x16",
+        "arch_2x32_exp_baseline",
+        "arch_2x64",
+        "arch_2x128",
+    ],
+    "depth_sweep": [
+        "arch_1x32",
+        "arch_2x32_exp_baseline",
+        "arch_3x32",
+    ],
+    "capacity_extremes": [
+        "arch_1x16",
+        "arch_2x32_exp_baseline",
+        "arch_3x64",
+    ],
+}
+
+
 SMOKE_TEST_CONFIG_OVERRIDES = {
     "seeds": SMOKE_TEST_SEEDS,
     "num_iterations": 10,

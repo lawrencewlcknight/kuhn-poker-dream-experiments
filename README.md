@@ -167,6 +167,8 @@ Runs a matched-seed ablation over hidden-layer architecture. The baseline arm us
 
 **Question:** how do hidden-layer width, depth, and parameter count affect DREAM exploitability, policy-value error, sample efficiency, and network diagnostics in Kuhn poker?
 
+For cloud runs, split this experiment with `--variant-set width_sweep`, `--variant-set depth_sweep`, and `--variant-set capacity_extremes`; the full eight-variant sweep can exceed a 48-hour Batch limit.
+
 Future DREAM ablations should be added as separate experiment folders under `experiments/kuhn_poker/`, while reusing the shared `dream_poker` package and output conventions.
 
 ## Setup
@@ -326,7 +328,7 @@ python -m experiments.kuhn_poker.dream_network_size_ablation.run \
   --advantage-network-train-steps 20 \
   --baseline-network-train-steps 20 \
   --evaluation-interval 5 \
-  --variants arch_1x16,arch_2x32_exp_baseline \
+  --variant-set capacity_extremes \
   --output-root outputs/smoke_tests/dream_network_size_ablation
 ```
 
