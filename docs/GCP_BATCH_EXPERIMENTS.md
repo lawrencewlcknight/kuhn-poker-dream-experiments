@@ -464,7 +464,7 @@ repository Python dependencies locally, submit tiny Batch jobs for experiments
 
 ```bash
 ./gcp/submit_batch_experiment.sh \
-  "dream-exp10-width-smoke-$(date +%Y%m%d-%H%M%S)" \
+  "kuhn-poker-dream-exp10-width-smoke-$(date +%Y%m%d-%H%M%S)" \
   "python -m experiments.kuhn_poker.dream_network_size_ablation.run \
     --seeds 1234 \
     --iterations 10 \
@@ -480,7 +480,7 @@ repository Python dependencies locally, submit tiny Batch jobs for experiments
   "16000"
 
 ./gcp/submit_batch_experiment.sh \
-  "dream-exp11-depth-smoke-$(date +%Y%m%d-%H%M%S)" \
+  "kuhn-poker-dream-exp11-depth-smoke-$(date +%Y%m%d-%H%M%S)" \
   "python -m experiments.kuhn_poker.dream_network_depth_ablation.run \
     --seeds 1234 \
     --iterations 10 \
@@ -496,7 +496,7 @@ repository Python dependencies locally, submit tiny Batch jobs for experiments
   "16000"
 
 ./gcp/submit_batch_experiment.sh \
-  "dream-exp12-capacity-smoke-$(date +%Y%m%d-%H%M%S)" \
+  "kuhn-poker-dream-exp12-capacity-smoke-$(date +%Y%m%d-%H%M%S)" \
   "python -m experiments.kuhn_poker.dream_network_capacity_extremes_ablation.run \
     --seeds 1234 \
     --iterations 10 \

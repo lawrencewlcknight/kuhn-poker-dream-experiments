@@ -259,7 +259,7 @@ the GCP environment variables from
 ```bash
 # Experiment 10 — network-width ablation smoke test on GCP
 ./gcp/submit_batch_experiment.sh \
-  "dream-exp10-width-smoke-$(date +%Y%m%d-%H%M%S)" \
+  "kuhn-poker-dream-exp10-width-smoke-$(date +%Y%m%d-%H%M%S)" \
   "python -m experiments.kuhn_poker.dream_network_size_ablation.run \
     --seeds 1234 \
     --iterations 10 \
@@ -276,7 +276,7 @@ the GCP environment variables from
 
 # Experiment 11 — network-depth ablation smoke test on GCP
 ./gcp/submit_batch_experiment.sh \
-  "dream-exp11-depth-smoke-$(date +%Y%m%d-%H%M%S)" \
+  "kuhn-poker-dream-exp11-depth-smoke-$(date +%Y%m%d-%H%M%S)" \
   "python -m experiments.kuhn_poker.dream_network_depth_ablation.run \
     --seeds 1234 \
     --iterations 10 \
@@ -293,7 +293,7 @@ the GCP environment variables from
 
 # Experiment 12 — network-capacity extremes ablation smoke test on GCP
 ./gcp/submit_batch_experiment.sh \
-  "dream-exp12-capacity-smoke-$(date +%Y%m%d-%H%M%S)" \
+  "kuhn-poker-dream-exp12-capacity-smoke-$(date +%Y%m%d-%H%M%S)" \
   "python -m experiments.kuhn_poker.dream_network_capacity_extremes_ablation.run \
     --seeds 1234 \
     --iterations 10 \
