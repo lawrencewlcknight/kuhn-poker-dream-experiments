@@ -10,7 +10,7 @@ This guide explains how to run the DREAM Kuhn poker experiments on Google Cloud 
 6. run full DREAM experiments with configurable CPU and memory;
 7. inspect logs and retrieve outputs.
 
-Each Batch job creates a temporary VM, clones this repository, creates an isolated Python 3.9 virtual environment, installs the repository dependencies, runs the selected experiment, copies outputs to Cloud Storage, and exits. Batch handles VM lifecycle management, so there is no persistent VM to shut down after a successful job.
+Each Batch job creates a temporary VM, clones this repository, creates an isolated Python 3.9 virtual environment, installs the repository dependencies, runs the selected experiment, uploads outputs to Cloud Storage, and exits. Batch handles VM lifecycle management, so there is no persistent VM to shut down after a successful job.
 
 This repository pins Python 3.9 in:
 
@@ -287,7 +287,7 @@ free -h || true
 df -h || true
 lscpu | head -30 || true
 
-# Keep experiment dependencies isolated from the Google Cloud CLI Python runtime.
+# Keep experiment dependencies isolated from the VM Python runtime.
 python3.9 -m venv --copies /tmp/kuhn-dream-venv
 source /tmp/kuhn-dream-venv/bin/activate
 
@@ -298,12 +298,24 @@ python -m pip check || true
 
 mkdir -p "outputs/cloud/{job_name}"
 
-{experiment_command}
+EXPERIMENT_EXIT=0
+{experiment_command} || EXPERIMENT_EXIT=$?
 
-deactivate
+deactivate || true
 
-echo "Experiment completed. Copying outputs to Cloud Storage."
-gsutil -m cp -r outputs "{bucket}/{job_name}/"
+echo "Experiment command finished. Copying outputs to Cloud Storage."
+UPLOAD_EXIT=0
+python3.9 gcp/upload_outputs_to_gcs.py outputs "{bucket}/{job_name}/outputs" || UPLOAD_EXIT=$?
+
+if [ "$EXPERIMENT_EXIT" -ne 0 ]; then
+  echo "Experiment command failed with exit code $EXPERIMENT_EXIT."
+  exit "$EXPERIMENT_EXIT"
+fi
+
+if [ "$UPLOAD_EXIT" -ne 0 ]; then
+  echo "Output upload failed with exit code $UPLOAD_EXIT."
+  exit "$UPLOAD_EXIT"
+fi
 
 echo "Done."
 """
@@ -422,10 +434,10 @@ The script prints the Batch script before submission. Check that:
 
 - it clones `kuhn-poker-dream-experiments`;
 - it creates the virtual environment with `python3.9`;
-- the upload line uses `gsutil`, for example:
+- the upload line uses the repository uploader, for example:
 
 ```bash
-gsutil -m cp -r outputs "gs://your-project-id-kuhn-poker-dream-results/dream-smoke-baseline-.../"
+python3.9 gcp/upload_outputs_to_gcs.py outputs "gs://your-project-id-kuhn-poker-dream-results/dream-smoke-baseline-.../outputs"
 ```
 
 After submitting the smoke test, this command can be used to see whether the experiment is queued or running:
@@ -505,10 +517,12 @@ Useful things to look for:
 
 - `Python version:` should print Python 3.9;
 - `Outputs written to` means the experiment runner completed;
-- `Experiment completed. Copying outputs to Cloud Storage.` means the upload step started;
+- `Experiment command finished. Copying outputs to Cloud Storage.` means the upload step started;
+- `Uploaded N files` means the repository uploader finished copying outputs to Cloud Storage;
 - `No space left on device` indicates disk pressure;
 - `Killed`, `exit code 137`, or `Out of memory` usually indicates memory pressure;
 - `maxRunDuration` means the job hit the time limit;
+- a `gsutil` or Google Cloud CLI Python traceback usually means the job used an old submission script; resubmit with the current `gcp/submit_batch_experiment.sh`;
 - `Invalid machine type` or resource errors usually mean the requested CPU/memory does not fit the selected machine type;
 - `Unable to locate package python3.9` means the Batch VM image does not provide Python 3.9 through `apt`; use a VM image with Python 3.9 available or switch to a pre-built container image.
 
@@ -709,7 +723,7 @@ A VM may be too small if:
 | `43200` | 12 hours |
 | `86400` | 24 hours |
 
-If a job exceeds `MAX_RUN_SECONDS`, Batch stops the task and marks the job as failed. If the task is stopped before the final `gsutil` upload step, outputs that exist only on the VM may be lost.
+If a job exceeds `MAX_RUN_SECONDS`, Batch stops the task and marks the job as failed. If the task is stopped before the final upload step, outputs that exist only on the VM may be lost.
 
 ---
 

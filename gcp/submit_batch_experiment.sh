@@ -98,7 +98,7 @@ free -h || true
 df -h || true
 lscpu | head -30 || true
 
-# Keep experiment dependencies isolated from the Google Cloud CLI Python runtime.
+# Keep experiment dependencies isolated from the VM Python runtime.
 python3.9 -m venv --copies /tmp/kuhn-dream-venv
 source /tmp/kuhn-dream-venv/bin/activate
 
@@ -109,12 +109,24 @@ python -m pip check || true
 
 mkdir -p "outputs/cloud/{job_name}"
 
-{experiment_command}
+EXPERIMENT_EXIT=0
+{experiment_command} || EXPERIMENT_EXIT=$?
 
-deactivate
+deactivate || true
 
-echo "Experiment completed. Copying outputs to Cloud Storage."
-gsutil -m cp -r outputs "{bucket}/{job_name}/"
+echo "Experiment command finished. Copying outputs to Cloud Storage."
+UPLOAD_EXIT=0
+python3.9 gcp/upload_outputs_to_gcs.py outputs "{bucket}/{job_name}/outputs" || UPLOAD_EXIT=$?
+
+if [ "$EXPERIMENT_EXIT" -ne 0 ]; then
+  echo "Experiment command failed with exit code $EXPERIMENT_EXIT."
+  exit "$EXPERIMENT_EXIT"
+fi
+
+if [ "$UPLOAD_EXIT" -ne 0 ]; then
+  echo "Output upload failed with exit code $UPLOAD_EXIT."
+  exit "$UPLOAD_EXIT"
+fi
 
 echo "Done."
 """
