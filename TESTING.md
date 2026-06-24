@@ -26,6 +26,10 @@ pytest -q
 
 The following commands run deliberately tiny two-seed DREAM experiments. They are intended to check that the runners, outputs, and plotting pipelines work; they are not scientifically meaningful.
 
+Run them from the activated environment created above. If `python` reports
+`ModuleNotFoundError: No module named 'matplotlib'`, the selected interpreter
+does not have `requirements.txt` installed.
+
 ```bash
 python -m experiments.kuhn_poker.dream_multiseed_baseline.run \
   --seeds 1234,2025 \

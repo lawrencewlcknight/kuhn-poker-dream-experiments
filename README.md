@@ -251,6 +251,10 @@ python -m experiments.kuhn_poker.dream_network_capacity_extremes_ablation.run
 
 For a quick smoke test of just the network-architecture experiments:
 
+Run these from an activated environment that has `requirements.txt` installed. If
+you see `ModuleNotFoundError: No module named 'matplotlib'`, the selected
+`python` is not the environment used for this repository.
+
 ```bash
 # Experiment 10 — network-width ablation smoke test
 python -m experiments.kuhn_poker.dream_network_size_ablation.run \
